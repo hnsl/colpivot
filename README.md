@@ -57,13 +57,12 @@ To avoid having to specify an output column definition (since there is many
 real world cases where this is not possible to say beforehand) the result is
 stored in a temporary table with the specified name. It is impossible to return
 a result set with dynamic columns in Postgres without using temporary tables.
-The resulting temporary table is deleted when the transaction ends (on commit
-drop).
 
 ## Parameter reference:
 
 * **`out_table`** - Unquoted new temporary table to create.
-* **`in_query`** [1] - Query to run that generates source data to colpivot().
+The table is deleted when the transaction ends (`on commit drop`).
+* **`in_query`** [1] - Query to run that generates source data to `colpivot()`.
 * **`key_cols`** - Array of unquoted key columns.
 * **`class_cols`** - Array of unquoted class columns.
 * **`value_e`** [1] - Value expression. You must use the `#` token as an alias
