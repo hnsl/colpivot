@@ -8,7 +8,7 @@ create or replace function colpivot(
     out_table varchar, in_query varchar,
     key_cols varchar[], class_cols varchar[],
     value_e varchar, col_order varchar
-) returns void as $$
+) returns boolean as $$
     declare
         in_table varchar;
         col varchar;
@@ -74,6 +74,11 @@ create or replace function colpivot(
             query := query || '_key.' || quote_ident(col) || ' ';
             i := i + 1;
         end loop;
+        -- empty resultset, bail out
+        if n_clsc_cols is null then
+            execute ('drop table ' || in_table);
+            return false;
+        end if;
         for j in 1..n_clsc_cols loop
             query := query || ', ';
             col := '';
@@ -86,6 +91,7 @@ create or replace function colpivot(
             ali := '_clsc_' || j::text;
             query := query || '(' || replace(value_e, '#', ali) || ')' || ' as ' || quote_ident(col) || ' ';
         end loop;
+        -- from part
         query := query || ' from (select distinct ';
         i := 0;
         foreach col in array key_cols loop
@@ -103,8 +109,10 @@ create or replace function colpivot(
             foreach col in array key_cols loop
                 if i > 0 then
                     on_e := on_e || ' and ';
+                    on_e := on_e || '(' || ali || '.' || quote_ident(col) || ' = _key.' || quote_ident(col) || ' OR (' || ali || '.' || quote_ident(col) || ' IS NULL AND _key.' || quote_ident(col) || ' IS NULL)) ';
+                else
+                    on_e := on_e || ali || '.' || quote_ident(col) || ' = _key.' || quote_ident(col) || ' ';
                 end if;
-                on_e := on_e || ali || '.' || quote_ident(col) || ' = _key.' || quote_ident(col) || ' ';
                 i := i + 1;
             end loop;
             for k in 1..n_class_cols loop
@@ -116,7 +124,7 @@ create or replace function colpivot(
         -- raise notice '%', query;
         execute ('create temp table ' || quote_ident(out_table) || ' on commit drop as ' || query);
         -- cleanup temporary in_table before we return
-        execute ('drop table ' || in_table)
-        return;
+        execute ('drop table ' || in_table);
+        return true;
     end;
 $$ language plpgsql volatile;
