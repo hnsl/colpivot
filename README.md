@@ -1,7 +1,7 @@
 # Colpivot
 *Dynamic row to column pivotation/transpose in Postgres made simple.*
 
-Author: Hannes Landeholm <hannes@jumpstarter.io>
+Author: Hannes Landeholm <hannes.landeholm@gmail.com>
 
 `colpivot.sql` defines a single Postgres function:
 
