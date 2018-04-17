@@ -84,7 +84,7 @@ create or replace function colpivot(
                 col := col || clsc_cols[(j - 1) * n_class_cols + k];
             end loop;
             ali := '_clsc_' || j::text;
-            query := query || '(' || replace(value_e, '#', ali) || ')' || ' as ' || quote_ident(col) || ' ';
+            query := query || '(' || replace(value_e, '#', ali) || ')' || ' as ' || regexp_replace(regexp_replace(regexp_replace(col, '[''",]', '', 'gi'), '[^0-9a-zA-Z]', '_', 'gi'), '^([0-9])', '_\1') || ' ';
         end loop;
         query := query || ' from (select distinct ';
         i := 0;
